@@ -1,20 +1,36 @@
 <template>
-  <form>
-    <h1>Sign Up</h1>
-    <label for="username">Username</label>
-    <input id="username" v-model="username">
-
-    <label for="e-mail">E-mail</label>
-    <input id="e-mail" v-model="email">
-
-    <label for="password">Password</label>
-    <input id="password" type="password" v-model="password">
-
-    <label for="password-repeat">Password Repeat</label>
-    <input id="password-repeat" type="password" v-model="passwordRepeat">
-
-    <button :disabled="isDisabled" @click.prevent="submit"> Sign Up </button>
-  </form>
+  <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+    <form class="card mt-5" data-testid="form-sign-up" v-if="!signUpSuccess">
+      <div class="card-header">
+        <h1 class="text-center">Sign Up</h1>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input id="username" class="form-control" v-model="username">
+        </div>
+        <div class="mb-3">
+          <label for="e-mail" class="form-label">E-mail</label>
+          <input id="e-mail" class="form-control" v-model="email">
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input id="password" type="password" class="form-control" v-model="password">
+        </div>
+        <div class="mb-3">
+          <label for="password-repeat" class="form-label">Password Repeat</label>
+          <input id="password-repeat" type="password" class="form-control" v-model="passwordRepeat">
+        </div>
+        <div class="text-center">
+          <button class="btn btn-primary" :disabled="isDisabled || disabled" @click.prevent="submit">
+            <span v-if="apiProgress" class="spinner-border spinner-border-sm" role="status"></span>
+            Sign Up
+          </button>
+        </div>
+      </div>
+    </form>
+    <div v-else class="alert alert-success mt-3">Please check your e-mail to activate your account</div>
+  </div>
 </template>
 <script>
 import axios from 'axios'
@@ -22,21 +38,26 @@ export default {
   name: "SignUpPage",
   data() {
     return {
+      disabled: false,
       username: '',
       email: '',
       password: '',
       passwordRepeat: '',
+      apiProgress: false,
+      signUpSuccess: false
     }
   },
   methods: {
     submit() {
-
+      this.disabled = true
+      this.apiProgress = true
       axios.post('/api/1.0/users', {
         username: this.username,
         email: this.email,
         password: this.password
-      })
-
+      }).then(() => {
+        this.signUpSuccess = true
+      }).catch(() => { })
     }
   },
   computed: {
