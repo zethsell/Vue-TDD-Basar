@@ -5,24 +5,13 @@
         <h1 class="text-center">Sign Up</h1>
       </div>
       <div class="card-body">
-        <div class="mb-3">
-          <label for="username" class="form-label">Username</label>
-          <input id="username" class="form-control" v-model="username">
-        </div>
-        <div class="mb-3">
-          <label for="e-mail" class="form-label">E-mail</label>
-          <input id="e-mail" class="form-control" v-model="email">
-        </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
-          <input id="password" type="password" class="form-control" v-model="password">
-        </div>
-        <div class="mb-3">
-          <label for="password-repeat" class="form-label">Password Repeat</label>
-          <input id="password-repeat" type="password" class="form-control" v-model="passwordRepeat">
-        </div>
+        <Input id="username" label="Username" :help="errors?.username" v-model="username" />
+        <Input id="email" label="E-mail" :help="errors?.email" v-model="email" />
+        <Input id="password" label="Password" :help="errors?.password" v-model="password" type="password" />
+        <Input id="password-repeat" label="Password Repeat" :help="hasPasswordMismatch ? 'Password mismatch' : ''"
+          v-model="passwordRepeat" type="password" />
         <div class="text-center">
-          <button class="btn btn-primary" :disabled="isDisabled || disabled" @click.prevent="submit">
+          <button class="btn btn-primary" :disabled="isDisabled || apiProgress" @click.prevent="submit">
             <span v-if="apiProgress" class="spinner-border spinner-border-sm" role="status"></span>
             Sign Up
           </button>
@@ -34,22 +23,25 @@
 </template>
 <script>
 import axios from 'axios'
+import Input from '../components/InputField.vue'
 export default {
   name: "SignUpPage",
+  components: {
+    Input
+  },
   data() {
     return {
-      disabled: false,
       username: '',
       email: '',
       password: '',
       passwordRepeat: '',
       apiProgress: false,
-      signUpSuccess: false
+      signUpSuccess: false,
+      errors: {}
     }
   },
   methods: {
     submit() {
-      this.disabled = true
       this.apiProgress = true
       axios.post('/api/1.0/users', {
         username: this.username,
@@ -57,15 +49,34 @@ export default {
         password: this.password
       }).then(() => {
         this.signUpSuccess = true
-      }).catch(() => { })
-    }
+      }).catch((error) => {
+        if (error.response.status === 400) {
+          this.errors = error.response.data.validationErrors
+        }
+        this.apiProgress = false
+      })
+    },
   },
   computed: {
     isDisabled() {
       return this.password && this.passwordRepeat
         ? this.password !== this.passwordRepeat
         : true
+    },
+    hasPasswordMismatch() {
+      return this.password !== this.passwordRepeat
     }
+  },
+  watch: {
+    username() {
+      delete this.errors?.username
+    },
+    email() {
+      delete this.errors?.email
+    },
+    password() {
+      delete this.errors?.password
+    },
   }
 }
 </script>

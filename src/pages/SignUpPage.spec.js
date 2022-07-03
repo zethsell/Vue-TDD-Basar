@@ -56,7 +56,7 @@ describe('SignUpPage', () => {
   describe('Interaction', () => {
     let requestBody
     let counter = 0
-    let button
+    let button, passwordInput, passwordRepeatInput, usernameInput, emailInput
     const server = setupServer(
       rest.post('/api/1.0/users', (req, res, ctx) => {
         requestBody = req.body
@@ -74,18 +74,27 @@ describe('SignUpPage', () => {
 
     afterAll(() => server.close())
 
-
     const setup = async () => {
       render(SignUpPage)
-      const usernameInput = screen.queryByLabelText('Username')
-      const emailInput = screen.queryByLabelText('E-mail')
-      const passwordInput = screen.queryByLabelText('Password')
-      const passwordRepeatInput = screen.queryByLabelText('Password Repeat')
+      usernameInput = screen.queryByLabelText('Username')
+      emailInput = screen.queryByLabelText('E-mail')
+      passwordInput = screen.queryByLabelText('Password')
+      passwordRepeatInput = screen.queryByLabelText('Password Repeat')
       button = screen.queryByRole('button', { name: 'Sign Up' })
       await userEvent.type(usernameInput, "user1")
       await userEvent.type(emailInput, "user1@mail.com")
       await userEvent.type(passwordInput, "P4ssword")
       await userEvent.type(passwordRepeatInput, "P4ssword")
+    }
+
+    const generateValidationError = (field, message) => {
+      return rest.post('/api/1.0/users', (req, res, ctx) => {
+        return res(ctx.status(400), ctx.json({
+          validationErrors: {
+            [field]: message
+          }
+        }))
+      })
     }
 
     it('enables the button when the password and password resets matchs', async () => {
@@ -109,12 +118,12 @@ describe('SignUpPage', () => {
       await screen.findByText("Please check your e-mail to activate your account")
       expect(counter).toBe(1)
     })
-    /*  it('display spinner while the api request in progress', async () => {
-       await setup()
-       await userEvent.click(button)
-       const spinner = screen.queryByRole("status")
-       expect(spinner).toBeInTheDocument()
-     }) */
+    /* it('display spinner while the api request in progress', async () => {
+      await setup()
+      await userEvent.click(button)
+      const spinner = screen.queryByRole("status")
+      expect(spinner).toBeInTheDocument()
+    }) */
     it('does not display spinner when there is no api request', async () => {
       await setup()
       const spinner = screen.queryByRole('status')
@@ -149,6 +158,54 @@ describe('SignUpPage', () => {
       await waitFor(() => {
         expect(form).not.toBeInTheDocument()
       })
+    })
+    it.each`
+      field         | message
+      ${'username'} | ${'Username cannot be null'}
+      ${'email'}    | ${'E-mail cannot be null'}
+      ${'password'} | ${'Password cannot be null'}
+    `('displays $message for field $field', async ({ field, message }) => {
+      server.use(generateValidationError(field, message))
+      await setup()
+      await userEvent.click(button)
+      const text = await screen.findByText(message)
+      expect(text).toBeInTheDocument()
+    })
+    it('hides spinner after error response received', async () => {
+      server.use(generateValidationError('username', 'Username cannot be null'))
+      await setup()
+      await userEvent.click(button)
+      await screen.findByText("Username cannot be null")
+      const spinner = screen.queryByRole('status')
+      expect(spinner).not.toBeInTheDocument()
+    })
+    it('enables the button after error response received', async () => {
+      server.use(generateValidationError('username', 'Username cannot be null'))
+      await setup()
+      await userEvent.click(button)
+      await screen.findByText("Username cannot be null")
+      expect(button).toBeEnabled()
+    })
+    it('display mismatch message for password repeat input', async () => {
+      await setup()
+      await userEvent.type(passwordInput, "P4ss1")
+      await userEvent.type(passwordRepeatInput, "P4ss2")
+      const text = await screen.findByText("Password mismatch")
+      expect(text).toBeInTheDocument()
+    })
+    it.each`
+      field         | message                      | label
+      ${'username'} | ${'Username cannot be null'} | ${'Username'}
+      ${'email'}    | ${'E-mail cannot be null'}   | ${'E-mail'}
+      ${'password'} | ${'Password cannot be null'} | ${'Password'} 
+    `('clear validation error after field $field is updated', async ({ field, message, label }) => {
+      server.use(generateValidationError(field, message))
+      await setup()
+      await userEvent.click(button)
+      const text = await screen.findByText(message)
+      const input = screen.queryByLabelText(label)
+      await userEvent.type(input, "updated")
+      expect(text).not.toBeInTheDocument()
     })
   })
 })
