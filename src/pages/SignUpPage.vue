@@ -2,18 +2,18 @@
   <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
     <form class="card mt-5" data-testid="form-sign-up" v-if="!signUpSuccess">
       <div class="card-header">
-        <h1 class="text-center">Sign Up</h1>
+        <h1 class="text-center">{{ $t('signUp') }}</h1>
       </div>
       <div class="card-body">
-        <Input id="username" label="Username" :help="errors?.username" v-model="username" />
-        <Input id="email" label="E-mail" :help="errors?.email" v-model="email" />
-        <Input id="password" label="Password" :help="errors?.password" v-model="password" type="password" />
-        <Input id="password-repeat" label="Password Repeat" :help="hasPasswordMismatch ? 'Password mismatch' : ''"
+        <Input id="username" :label="$t('username')" :help="errors?.username" v-model="username" />
+        <Input id="email" :label="$t('email')" :help="errors?.email" v-model="email" />
+        <Input id="password" :label="$t('password')" :help="errors?.password" v-model="password" type="password" />
+        <Input id="password-repeat" :label="$t('passwordRepeat')" :help="hasPasswordMismatch ? 'Password mismatch' : ''"
           v-model="passwordRepeat" type="password" />
         <div class="text-center">
           <button class="btn btn-primary" :disabled="isDisabled || apiProgress" @click.prevent="submit">
             <span v-if="apiProgress" class="spinner-border spinner-border-sm" role="status"></span>
-            Sign Up
+            {{ $t('signUp') }}
           </button>
         </div>
       </div>
