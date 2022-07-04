@@ -24,8 +24,8 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
 import Input from '../components/InputField.vue'
+import { signUp } from '../api/apiCalls'
 export default {
   name: "SignUpPage",
   components: {
@@ -43,24 +43,21 @@ export default {
     }
   },
   methods: {
-    submit() {
+    async submit() {
       this.apiProgress = true
-      axios.post('/api/1.0/users', {
-        username: this.username,
-        email: this.email,
-        password: this.password
-      }, {
-        headers: {
-          "Accept-Language": this.$i18n.locale
-        }
-      }).then(() => {
+      try {
+        await signUp({
+          username: this.username,
+          email: this.email,
+          password: this.password
+        })
         this.signUpSuccess = true
-      }).catch((error) => {
+      } catch (error) {
         if (error.response.status === 400) {
           this.errors = error.response.data.validationErrors
         }
         this.apiProgress = false
-      })
+      }
     },
   },
   computed: {
