@@ -226,7 +226,7 @@ describe('SignUpPage', () => {
     })
   })
   describe('Internationalization', () => {
-    let portugueseLanguage, englishLanguage
+    let portugueseLanguage, englishLanguage, password, passwordRepeat
     const setup = () => {
       const app = {
         components: {
@@ -245,6 +245,9 @@ describe('SignUpPage', () => {
       })
       portugueseLanguage = screen.queryByTitle('Portuguese')
       englishLanguage = screen.queryByTitle('English')
+      password = screen.queryByLabelText(en.password)
+      passwordRepeat = screen.queryByLabelText(en.passwordRepeat)
+
     }
 
     afterEach(() => {
@@ -280,6 +283,14 @@ describe('SignUpPage', () => {
       expect(screen.queryByLabelText(en.email)).toBeInTheDocument()
       expect(screen.queryByLabelText(en.password)).toBeInTheDocument()
       expect(screen.queryByLabelText(en.passwordRepeat)).toBeInTheDocument()
+    })
+    it('displays password mismatch validation in Portuguese', async () => {
+      setup()
+      await userEvent.click(portugueseLanguage)
+      await userEvent.type(password, "P4ssword")
+      await userEvent.type(passwordRepeat, "NewP4ssword")
+      const validation = screen.queryByText(pt.passwordMismatchValidation)
+      expect(validation).toBeInTheDocument()
     })
   })
 })

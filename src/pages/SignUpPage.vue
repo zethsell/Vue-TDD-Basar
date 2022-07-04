@@ -8,8 +8,9 @@
         <Input id="username" :label="$t('username')" :help="errors?.username" v-model="username" />
         <Input id="email" :label="$t('email')" :help="errors?.email" v-model="email" />
         <Input id="password" :label="$t('password')" :help="errors?.password" v-model="password" type="password" />
-        <Input id="password-repeat" :label="$t('passwordRepeat')" :help="hasPasswordMismatch ? 'Password mismatch' : ''"
-          v-model="passwordRepeat" type="password" />
+        <Input id="password-repeat" :label="$t('passwordRepeat')"
+          :help="hasPasswordMismatch ? $t('passwordMismatchValidation') : ''" v-model="passwordRepeat"
+          type="password" />
         <div class="text-center">
           <button class="btn btn-primary" :disabled="isDisabled || apiProgress" @click.prevent="submit">
             <span v-if="apiProgress" class="spinner-border spinner-border-sm" role="status"></span>
