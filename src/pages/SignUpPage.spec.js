@@ -9,6 +9,28 @@ import en from '../locales/en.json'
 import pt from '../locales/pt.json'
 import LanguageSelector from '../components/LanguageSelector.vue'
 
+let requestBody
+let counter = 0
+let acceptLanguageHeader
+let button, passwordInput, passwordRepeatInput, usernameInput, emailInput
+const server = setupServer(
+  rest.post('/api/1.0/users', (req, res, ctx) => {
+    requestBody = req.body
+    counter += 1
+    acceptLanguageHeader = req.headers.get('Accept-Language')
+    return res(ctx.status(200))
+  })
+)
+
+beforeAll(() => server.listen())
+
+beforeEach(() => {
+  counter = 0
+  server.resetHandlers()
+})
+
+afterAll(() => server.close())
+
 describe('SignUpPage', () => {
   describe("Layout", () => {
 
@@ -67,26 +89,6 @@ describe('SignUpPage', () => {
     })
   })
   describe('Interaction', () => {
-    let requestBody
-    let counter = 0
-    let button, passwordInput, passwordRepeatInput, usernameInput, emailInput
-    const server = setupServer(
-      rest.post('/api/1.0/users', (req, res, ctx) => {
-        requestBody = req.body
-        counter += 1
-        return res(ctx.status(200))
-      })
-    )
-
-    beforeAll(() => server.listen())
-
-    beforeEach(() => {
-      counter = 0
-      server.resetHandlers()
-    })
-
-    afterAll(() => server.close())
-
     const setup = async () => {
       render(SignUpPage, {
         global: {
@@ -226,7 +228,7 @@ describe('SignUpPage', () => {
     })
   })
   describe('Internationalization', () => {
-    let portugueseLanguage, englishLanguage, password, passwordRepeat
+    let portugueseLanguage, englishLanguage, password, passwordRepeat, username, email, button
     const setup = () => {
       const app = {
         components: {
@@ -247,12 +249,15 @@ describe('SignUpPage', () => {
       englishLanguage = screen.queryByTitle('English')
       password = screen.queryByLabelText(en.password)
       passwordRepeat = screen.queryByLabelText(en.passwordRepeat)
-
+      username = screen.queryByLabelText(en.username)
+      email = screen.queryByLabelText(en.email)
+      button = screen.queryByRole('button', { name: en.SignUp })
     }
 
     afterEach(() => {
       i18n.global.locale = "en"
     })
+
     it('initially displays all text in English', async () => {
       setup()
       expect(screen.queryByRole("heading", { name: en.signUp })).toBeInTheDocument()
@@ -262,6 +267,7 @@ describe('SignUpPage', () => {
       expect(screen.queryByLabelText(en.password)).toBeInTheDocument()
       expect(screen.queryByLabelText(en.passwordRepeat)).toBeInTheDocument()
     })
+
     it('displays all text in Portuguese after selecting that language', async () => {
       setup()
       await userEvent.click(portugueseLanguage)
@@ -284,6 +290,7 @@ describe('SignUpPage', () => {
       expect(screen.queryByLabelText(en.password)).toBeInTheDocument()
       expect(screen.queryByLabelText(en.passwordRepeat)).toBeInTheDocument()
     })
+
     it('displays password mismatch validation in Portuguese', async () => {
       setup()
       await userEvent.click(portugueseLanguage)
@@ -291,6 +298,39 @@ describe('SignUpPage', () => {
       await userEvent.type(passwordRepeat, "NewP4ssword")
       const validation = screen.queryByText(pt.passwordMismatchValidation)
       expect(validation).toBeInTheDocument()
+    })
+
+    it('sends accept-language having en to backend for signup request', async () => {
+      setup()
+      await userEvent.type(username, "user1")
+      await userEvent.type(email, "email@mail.com")
+      await userEvent.type(password, "P4ssword")
+      await userEvent.type(passwordRepeat, "P4ssword")
+      await userEvent.click(button)
+      await screen.findByText("Please check your e-mail to activate your account")
+      expect(acceptLanguageHeader).toBe('en')
+    })
+    it('sends accept-language having pt after that language as selected', async () => {
+      setup()
+      await userEvent.click(portugueseLanguage)
+      await userEvent.type(username, "user1")
+      await userEvent.type(email, "email@mail.com")
+      await userEvent.type(password, "P4ssword")
+      await userEvent.type(passwordRepeat, "P4ssword")
+      await userEvent.click(button)
+      await screen.findByText(pt.accountActivationNotification)
+      expect(acceptLanguageHeader).toBe('en')
+    })
+    it('display account activation information in Portuguese after selecting that language', async () => {
+      setup()
+      await userEvent.click(portugueseLanguage)
+      await userEvent.type(username, "user1")
+      await userEvent.type(email, "email@mail.com")
+      await userEvent.type(password, "P4ssword")
+      await userEvent.type(passwordRepeat, "P4ssword")
+      await userEvent.click(button)
+      const accountActivation = await screen.findByText(pt.accountActivationNotification)
+      expect(accountActivation).toBeInTheDocument()
     })
   })
 })

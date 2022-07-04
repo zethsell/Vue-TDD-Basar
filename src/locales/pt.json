@@ -4,5 +4,6 @@
   "email": "E-mail",
   "password": "Senha",
   "passwordRepeat": "Confirme a senha",
-  "passwordMismatchValidation": "As senhas não correspondem"
+  "passwordMismatchValidation": "As senhas não correspondem",
+  "accountActivationNotification": "Por favor verique seu e-mail para poder ativar sua conta"
 }

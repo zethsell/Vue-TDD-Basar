@@ -19,7 +19,7 @@
         </div>
       </div>
     </form>
-    <div v-else class="alert alert-success mt-3">Please check your e-mail to activate your account</div>
+    <div v-else class="alert alert-success mt-3">{{ $t('accountActivationNotification') }}</div>
 
   </div>
 </template>
@@ -49,6 +49,10 @@ export default {
         username: this.username,
         email: this.email,
         password: this.password
+      }, {
+        headers: {
+          "Accept-Language": this.$i18n.locale
+        }
       }).then(() => {
         this.signUpSuccess = true
       }).catch((error) => {
