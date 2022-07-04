@@ -5,6 +5,9 @@ import userEvent from '@testing-library/user-event'
 import { setupServer } from 'msw/node'
 import { rest } from 'msw'
 import i18n from '../locales/i18n'
+import en from '../locales/en.json'
+import pt from '../locales/pt.json'
+import LanguageSelector from '../components/LanguageSelector.vue'
 
 describe('SignUpPage', () => {
   describe("Layout", () => {
@@ -220,6 +223,63 @@ describe('SignUpPage', () => {
       const input = screen.queryByLabelText(label)
       await userEvent.type(input, "updated")
       expect(text).not.toBeInTheDocument()
+    })
+  })
+  describe('Internationalization', () => {
+    let portugueseLanguage, englishLanguage
+    const setup = () => {
+      const app = {
+        components: {
+          SignUpPage,
+          LanguageSelector
+        },
+        template: `
+        <SignUpPage/>
+        <LanguageSelector/>
+        `
+      }
+      render(app, {
+        global: {
+          plugins: [i18n]
+        }
+      })
+      portugueseLanguage = screen.queryByTitle('Portuguese')
+      englishLanguage = screen.queryByTitle('English')
+    }
+
+    afterEach(() => {
+      i18n.global.locale = "en"
+    })
+    it('initially displays all text in English', async () => {
+      setup()
+      expect(screen.queryByRole("heading", { name: en.signUp })).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: en.signUp })).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.username)).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.email)).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.password)).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.passwordRepeat)).toBeInTheDocument()
+    })
+    it('displays all text in Portuguese after selecting that language', async () => {
+      setup()
+      await userEvent.click(portugueseLanguage)
+      expect(screen.queryByRole("heading", { name: pt.signUp })).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: pt.signUp })).toBeInTheDocument()
+      expect(screen.queryByLabelText(pt.username)).toBeInTheDocument()
+      expect(screen.queryByLabelText(pt.email)).toBeInTheDocument()
+      expect(screen.queryByLabelText(pt.password)).toBeInTheDocument()
+      expect(screen.queryByLabelText(pt.passwordRepeat)).toBeInTheDocument()
+    })
+
+    it('displays all text in English after page is tranlated to portuguese', async () => {
+      setup()
+      await userEvent.click(portugueseLanguage)
+      await userEvent.click(englishLanguage)
+      expect(screen.queryByRole("heading", { name: en.signUp })).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: en.signUp })).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.username)).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.email)).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.password)).toBeInTheDocument()
+      expect(screen.queryByLabelText(en.passwordRepeat)).toBeInTheDocument()
     })
   })
 })
