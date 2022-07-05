@@ -5,4 +5,5 @@ module.exports = {
     '^.+\\.vue$': '@vue/vue3-jest',
     '^.+\\js$': 'babel-jest',
   },
+  setupFilesAfterEnv: ['./test/setupTest.js']
 }
