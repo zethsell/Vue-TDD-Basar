@@ -71,4 +71,13 @@ describe('Routing', () => {
       const page = screen.queryByTestId(visiblePage)
       expect(page).toBeInTheDocument()
     })
+
+  it('displays home page when clicking brand logo', async () => {
+    setup('/login')
+    const image = screen.queryByAltText('Home Logo')
+    await userEvent.click(image)
+    const page = screen.queryByTestId('home-page')
+    expect(page).toBeInTheDocument()
+  })
+
 })
