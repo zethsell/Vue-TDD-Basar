@@ -46,21 +46,18 @@ describe('SignUpPage', () => {
       const header = screen.queryByRole('heading', { name: 'Sign Up' })
       expect(header).toBeInTheDocument()
     })
-    it("has username input", () => {
+
+    it.each`
+      label         
+      ${'Username'} 
+      ${'E-mail'} 
+      ${'Password'} 
+    `('has $label input', async ({ label }) => {
       setup()
-      const input = screen.queryByLabelText('Username')
+      const input = screen.queryByLabelText(label)
       expect(input).toBeInTheDocument()
     })
-    it("has email input", () => {
-      setup()
-      const input = screen.queryByLabelText('E-mail')
-      expect(input).toBeInTheDocument()
-    })
-    it("has password input", () => {
-      setup()
-      const input = screen.queryByLabelText('Password')
-      expect(input).toBeInTheDocument()
-    })
+
     it("has password type for password input", () => {
       setup()
       const input = screen.queryByLabelText('Password')
@@ -136,12 +133,6 @@ describe('SignUpPage', () => {
       await screen.findByText("Please check your e-mail to activate your account")
       expect(counter).toBe(1)
     })
-    /* it('display spinner while the api request in progress', async () => {
-      await setup()
-      await userEvent.click(button)
-      const spinner = screen.queryByRole("status")
-      expect(spinner).toBeInTheDocument()
-    }) */
     it('does not display spinner when there is no api request', async () => {
       await setup()
       const spinner = screen.queryByRole('status')

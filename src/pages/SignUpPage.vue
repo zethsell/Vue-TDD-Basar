@@ -13,7 +13,7 @@
           type="password" />
         <div class="text-center">
           <button class="btn btn-primary" :disabled="isDisabled || apiProgress" @click.prevent="submit">
-            <Spinner v-if="apiProgress" />
+            <Spinner v-if="apiProgress" :show="signUpSuccess" />
             {{ $t('signUp') }}
           </button>
         </div>
