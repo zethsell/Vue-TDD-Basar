@@ -8,7 +8,7 @@
         <Input id="email" :label="'E-mail'" v-model="email" />
         <Input id="password" :label="'Password'" v-model="password" type="password" />
         <div class="text-center">
-          <button class="btn btn-primary" disabled @click.prevent="submit">
+          <button class="btn btn-primary" :disabled="isDisabled" @click.prevent="submit">
             Login
           </button>
         </div>
@@ -29,6 +29,11 @@ export default {
       password: '',
     }
   },
+  computed: {
+    isDisabled() {
+      return !(this.email && this.password)
+    }
+  }
 }
 </script>
 
