@@ -7,7 +7,7 @@
         </router-link>
         <ul class="navbar-nav ">
           <router-link class="nav-link" to="/signup">{{ $t('signUp') }}</router-link>
-          <router-link class="nav-link" to="/login">Login</router-link>
+          <router-link class="nav-link" to="/login">{{ $t('login') }}</router-link>
         </ul>
       </div>
     </nav>
